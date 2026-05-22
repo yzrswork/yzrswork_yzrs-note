@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>YZRS NOTE — dd-watch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=EB+Garamond:ital,wght@1,400&family=Noto+Sans+JP:wght@400;500;700&display=swap">
+<style>
+:root {
+  --f-jp:    'Noto Sans JP', 'Hiragino Kaku Gothic ProN', 'Yu Gothic', sans-serif;
+  --f-serif: 'EB Garamond', 'Times New Roman', serif;
+  --f-mono:  'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --c-ink:         #1c1a16;
+  --c-paper:       #f0ebe3;
+  --c-paper2:      #e8e1d4;
+  --c-white:       #f6f1e8;
+  --c-gray:        #a39a8a;
+  --c-border:      #c8bfae;
+  --c-muted:       #6f675b;
+  --c-accent:      #b5451b;
+  --c-accent-deep: #8e3514;
+  --bar-bg:   #ede5d4;
+  --bar-fg:   #1c1a16;
+  --bar-soft: rgba(28,26,22,.5);
+  --bar-rule: rgba(58,52,44,.28);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: #e6dfd0;
+  font-family: var(--f-mono);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  color: var(--c-ink);
+}
+@media print {
+  body { padding: 0; background: white; }
+  .page { box-shadow: none !important; width: 148mm; }
+  @page { size: A5 portrait; margin: 0; }
+}
+.page {
+  width: 100%;
+  max-width: 580px;
+  background: var(--c-white);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 2px 40px rgba(40,28,16,.18);
+}
+.page::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 99;
+  mix-blend-mode: multiply;
+}
+.ruler-dot {
+  height: 6px;
+  background: repeating-linear-gradient(90deg, var(--c-accent) 0, var(--c-accent) 2px, transparent 2px, transparent 6px);
+  opacity: .55;
+  flex-shrink: 0;
+}
+.header { padding: 24px 26px 18px; background: var(--c-white); }
+.logo { font-family: var(--f-jp); font-weight: 500; font-size: clamp(34px, 8.5vw, 50px); color: var(--c-ink); line-height: .92; letter-spacing: .03em; display: block; }
+.header-title-jp { font-family: var(--f-jp); font-weight: 400; font-size: clamp(12px, 3vw, 15px); color: var(--c-ink); letter-spacing: .04em; line-height: 1.4; margin-top: 10px; }
+.header-title-en { font-family: var(--f-serif); font-style: italic; font-size: clamp(11px, 2.8vw, 14px); color: var(--c-accent); letter-spacing: .08em; margin-top: 4px; }
+.header-meta { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 12px; padding-top: 10px; border-top: 2px solid var(--c-accent); }
+.meta-year { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink); opacity: .75; letter-spacing: .08em; text-transform: uppercase; }
+.meta-sn { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.sn-text { font-family: var(--f-mono); font-size: 9px; color: var(--c-ink); opacity: .55; letter-spacing: .12em; text-transform: uppercase; }
+.barcode { width: 110px; height: 22px; background: repeating-linear-gradient(90deg, var(--c-accent) 0, var(--c-accent) 2px, transparent 2px, transparent 3.5px, var(--c-accent) 3.5px, var(--c-accent) 4px, transparent 4px, transparent 6px, var(--c-accent) 6px, var(--c-accent) 7px, transparent 7px, transparent 10px); opacity: .75; }
+.visual-wrap { padding: 22px 26px; background: var(--c-white); }
+.visual-box { width: 100%; aspect-ratio: 4/3; background: var(--c-paper2); border: 1.5px solid var(--c-gray); display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
+.visual-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photo-placeholder { font-family: var(--f-serif); font-style: italic; font-size: clamp(16px, 4vw, 22px); color: var(--c-gray); letter-spacing: .12em; }
+.status-bar { background: var(--bar-bg); border-top: 1px solid var(--bar-rule); border-bottom: 1px solid var(--bar-rule); display: flex; align-items: center; padding: 0 26px; min-height: 40px; flex-shrink: 0; }
+.status-item { display: flex; align-items: baseline; gap: 5px; white-space: nowrap; padding: 11px 0; }
+.status-pipe { color: var(--bar-rule); font-family: var(--f-mono); font-size: 13px; padding: 0 12px; line-height: 1; }
+.s-key { font-family: var(--f-mono); font-weight: 500; font-size: 10px; color: var(--bar-soft); letter-spacing: .14em; text-transform: uppercase; }
+.s-ruby-inline { font-family: var(--f-serif); font-style: italic; font-size: 9.5px; color: var(--bar-soft); opacity: .7; letter-spacing: .05em; }
+.s-colon { font-family: var(--f-mono); font-size: 10px; color: var(--bar-soft); padding: 0 3px; }
+.s-val { font-family: var(--f-jp); font-weight: 700; font-size: 11.5px; color: var(--bar-fg); letter-spacing: .04em; text-transform: uppercase; }
+.status-item.type-item .s-val { color: var(--c-accent); }
+.stars-val { font-size: 12px; color: var(--bar-fg); opacity: .85; letter-spacing: 1px; }
+.stars-val .dim { opacity: .3; }
+.body { display: grid; grid-template-columns: 1fr 1px 1fr; background: var(--c-white); flex: 1; }
+.col-divider { background: var(--c-border); width: 1px; margin: 14px 0; }
+.col-left, .col-right { padding: 22px 24px 26px; display: flex; flex-direction: column; gap: 20px; }
+.sec-header { display: flex; align-items: center; background: var(--c-paper2); border-left: 4px solid var(--c-accent); padding: 8px 12px; margin-bottom: 14px; }
+.sec-title { font-family: var(--f-jp); font-weight: 500; font-size: 12px; color: var(--c-ink); letter-spacing: .3em; line-height: 1; }
+.sec-ruby { font-family: var(--f-serif); font-style: italic; font-size: 12px; color: var(--c-accent); opacity: .7; letter-spacing: .04em; margin-left: 10px; }
+.concept-text { font-family: var(--f-jp); font-weight: 400; font-size: 13px; line-height: 1.95; color: var(--c-ink); letter-spacing: .03em; }
+.memo-section { margin-top: auto; display: flex; flex-direction: column; }
+.memo-text { font-family: var(--f-jp); font-weight: 400; font-size: 12px; line-height: 1.85; color: var(--c-ink); opacity: .72; letter-spacing: .02em; }
+.spec-list { margin-top: 4px; display: flex; flex-direction: column; }
+.spec-item { padding: 11px 0; border-bottom: 1px solid var(--c-border); display: flex; align-items: baseline; flex-wrap: wrap; }
+.spec-item:last-child { border-bottom: none; }
+.spec-key { font-family: var(--f-jp); font-weight: 700; font-size: 11.5px; color: var(--c-ink); letter-spacing: .14em; text-transform: uppercase; margin-right: 5px; }
+.spec-key-ruby { font-family: var(--f-serif); font-style: italic; font-size: 11px; color: var(--c-accent); opacity: .7; margin-right: 4px; letter-spacing: .02em; }
+.spec-colon { font-family: var(--f-mono); font-size: 10px; color: var(--c-ink); opacity: .4; margin-right: 6px; }
+.spec-val { font-family: var(--f-mono); font-size: 11px; color: var(--c-ink); line-height: 1.45; letter-spacing: .02em; }
+.footer { background: var(--bar-bg); border-top: 1px solid var(--bar-rule); padding: 14px 26px; display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; flex-shrink: 0; }
+.footer-id { font-family: var(--f-mono); font-size: 10px; color: var(--bar-fg); opacity: .55; letter-spacing: .12em; text-transform: uppercase; }
+.footer-brand { font-family: var(--f-jp); font-weight: 700; font-size: 14px; color: var(--bar-fg); letter-spacing: .28em; text-align: center; text-transform: uppercase; }
+.footer-barcode { width: 80px; height: 20px; background: repeating-linear-gradient(90deg, var(--bar-fg) 0, var(--bar-fg) 2px, transparent 2px, transparent 3.5px, var(--bar-fg) 3.5px, var(--bar-fg) 4px, transparent 4px, transparent 6px, var(--bar-fg) 6px, var(--bar-fg) 7px, transparent 7px, transparent 10px); opacity: .35; }
+@media (max-width: 480px) {
+  body { padding: 8px; }
+  .logo { font-size: 34px; }
+  .body { grid-template-columns: 1fr; }
+  .col-divider { display: none; }
+  .col-right { border-top: 1px solid var(--c-border); }
+  .status-bar { flex-wrap: wrap; padding: 0 16px; }
+  .status-pipe { padding: 0 6px; }
+  .header, .visual-wrap, .col-left, .col-right, .footer { padding-left: 18px; padding-right: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <div class="ruler-dot"></div>
+
+  <div class="header">
+    <span class="logo">YZRS NOTE</span>
+    <div class="header-title-jp">dd-watch — e-photoframe series</div>
+    <div class="header-title-en">FINAL WORK DOCUMENT / e-photoframe series</div>
+    <div class="header-meta">
+      <div class="meta-year">ディーディーウォッチ / PRODUCED IN 2026</div>
+      <div class="meta-sn">
+        <span class="sn-text">SN No.003 / 127×178mm</span>
+        <div class="barcode"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ruler-dot"></div>
+
+  <div class="visual-wrap">
+    <div class="visual-box">
+      <span class="photo-placeholder">PHOTO HERE</span>
+    </div>
+  </div>
+
+  <div class="status-bar">
+    <div class="status-item type-item">
+      <span class="s-key">TYPE</span>
+      <span class="s-ruby-inline">タイワ</span>
+      <span class="s-colon">:</span>
+      <span class="s-val">kinetic</span>
+    </div>
+    <span class="status-pipe">|</span>
+    <div class="status-item">
+      <span class="s-key">RARITY</span>
+      <span class="s-ruby-inline">グイレ</span>
+      <span class="s-colon">:</span>
+      <span class="s-val">one of a kind</span>
+    </div>
+    <span class="status-pipe">|</span>
+    <div class="status-item">
+      <span class="s-key">DIFFICULTY</span>
+      <span class="s-ruby-inline">難膜黄</span>
+      <span class="s-colon">:</span>
+      <span class="stars-val">★★<span class="dim">★★★</span></span>
+    </div>
+  </div>
+
+  <div class="body">
+
+    <div class="col-left">
+      <div>
+        <div class="sec-header">
+          <span class="sec-title">CONCEPT</span>
+          <span class="sec-ruby">コンセプト</span>
+        </div>
+        <div class="concept-text">GEEK WATCH偏愛家・Donaldへのオマージュ。<br>逆回転クォーツが、ORICOO SUNデザインの時計の中で時を巻き戻す。<br>鏡を覗くと、それは普通に進む時計になる。</div>
+      </div>
+      <div class="memo-section">
+        <div class="sec-header">
+          <span class="sec-title">PRODUCTION MEMO</span>
+          <span class="sec-ruby">制作メモ</span>
+        </div>
+        <div class="memo-text">Arduinoでコイル外部駆動する案を検討したが廃止。<br>「逆回転専用ムーブメントをそのまま使う」というシンプルな構成に行き着いた。<br>引き算が成立する作品。</div>
+      </div>
+    </div>
+
+    <div class="col-divider"></div>
+
+    <div class="col-right">
+      <div class="sec-header">
+        <span class="sec-title">SPECIFICATIONS</span>
+        <span class="sec-ruby">仕様</span>
+      </div>
+      <div class="spec-list">
+        <div class="spec-item">
+          <span class="spec-key">SIZE</span>
+          <span class="spec-key-ruby">サイズ</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">既存時計流用</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">MOUNT</span>
+          <span class="spec-key-ruby">設置</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">壁掛け</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">POWER</span>
+          <span class="spec-key-ruby">電源</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">battery (AA)</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">MCU</span>
+          <span class="spec-key-ruby">制御</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">none</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">PARTS</span>
+          <span class="spec-key-ruby">部品</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">reverse quartz movement, hands</span>
+        </div>
+        <div class="spec-item">
+          <span class="spec-key">WIRE</span>
+          <span class="spec-key-ruby">配線</span>
+          <span class="spec-colon">:</span>
+          <span class="spec-val">none</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div class="ruler-dot"></div>
+
+  <div class="footer">
+    <div class="footer-id">ID: No.003</div>
+    <div class="footer-brand">YZRS WORK</div>
+    <div class="footer-barcode"></div>
+  </div>
+
+</div>
+
+</body>
+</html>
